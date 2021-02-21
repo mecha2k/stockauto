@@ -1,4 +1,13 @@
+from slacker import Slacker
+from dotenv import load_dotenv
+
 import win32com.client
+import os
+
+load_dotenv(verbose=True)
+bot_user_token = os.getenv("BOT_USER_TOKEN")
+
+slack = Slacker(bot_user_token)
 
 objCpCybos = win32com.client.Dispatch("CpUtil.CpCybos")
 bConnect = objCpCybos.IsConnect
@@ -64,3 +73,7 @@ print("예상체결가 대비 수량")
 print("예상체결가", exPrice)
 print("예상체결가 대비", exDiff)
 print("예상체결수량", exVol)
+
+offer = objStockMst.GetHeaderValue(16)
+
+slack.chat.post_message("#stock", "삼성전자 현재가: " + format(offer, ",") + "원")
