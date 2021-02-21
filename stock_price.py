@@ -17,7 +17,8 @@ if bConnect == 0:
 
 # 현재가 객체 구하기
 objStockMst = win32com.client.Dispatch("DsCbo1.StockMst")
-objStockMst.SetInputValue(0, "A005930")  # 종목 코드 - 삼성전자
+objStockMst.SetInputValue(0, "A261220")
+# objStockMst.SetInputValue(0, "A005930")  # 종목 코드 - 삼성전자
 objStockMst.BlockRequest()
 
 # 현재가 통신 및 통신 에러 처리
@@ -76,4 +77,4 @@ print("예상체결수량", exVol)
 
 offer = objStockMst.GetHeaderValue(16)
 
-slack.chat.post_message("#stock", "삼성전자 현재가: " + format(offer, ",") + "원")
+# slack.chat.post_message("#stock", "삼성전자 현재가: " + format(offer, ",") + "원")

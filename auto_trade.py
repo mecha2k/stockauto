@@ -220,7 +220,7 @@ def buy_etf(code):
             cpOrder.SetInputValue(2, accFlag[0])  # 상품구분 - 주식 상품 중 첫번째
             cpOrder.SetInputValue(3, code)  # 종목코드
             cpOrder.SetInputValue(4, buy_qty)  # 매수할 수량
-            cpOrder.SetInputValue(7, "2")  # 주문조건 0:기본, 1:IOC, 2:FOK
+            cpOrder.SetInputValue(7, "2")  # 주문조건 0:기본, 1:IOC (체결 후 남은 수량 취소), 2:FOK (전량 체결되지 않으면 주문 자체를 취소)
             cpOrder.SetInputValue(8, "12")  # 주문호가 1:보통, 3:시장가
             # 5:조건부, 12:최유리, 13:최우선
             # 매수 주문 요청
@@ -295,20 +295,14 @@ def sell_all():
 if __name__ == "__main__":
     try:
         symbol_list = [
-            "A122630",
-            "A252670",
-            "A233740",
-            "A250780",
-            "A225130",
-            "A280940",
-            "A261220",
-            "A217770",
-            "A295000",
-            "A176950",
+            "A069500",  # KODEX 200, 42,780
+            "A102780",  # KODEX 삼성그룹, 10,420
+            "A305720",  # KODEX 2차전지산업, 20450
+            "A261220",  # KODEX WTI원유선물(H), 8,960
         ]
         bought_list = []  # 매수 완료된 종목 리스트
-        target_buy_count = 5  # 매수할 종목 수
-        buy_percent = 0.19
+        target_buy_count = 4  # 매수할 종목 수
+        buy_percent = 0.25
         printlog("check_creon_system() :", check_creon_system())  # 크레온 접속 점검
         stocks = get_stock_balance("ALL")  # 보유한 모든 종목 조회
         total_cash = int(get_current_cash())  # 100% 증거금 주문 가능 금액 조회
