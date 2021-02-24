@@ -21,4 +21,4 @@ app = application.Application()
 app_arg = "C:/ProgramData/cybos5/STARTER/ncStarter.exe /prj:cp "
 app_arg += f"/id:{user_id} /pwd:{user_passwd} /pwdcert:{cert_passwd} /autostart"
 app.start(app_arg)
-time.sleep(60)
+time.sleep(30)

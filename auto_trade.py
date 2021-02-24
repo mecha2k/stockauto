@@ -27,7 +27,7 @@ def printlog(message, *args):
     """인자로 받은 문자열을 파이썬 셸에 출력한다."""
     strbuf = datetime.now().strftime("[%m/%d %H:%M:%S]") + message
     for arg in args:
-        strbuf += arg + " "
+        strbuf += str(arg) + " "
     print(datetime.now().strftime("[%m/%d %H:%M:%S]"), message, *args)
     slack.chat.post_message("#stock", strbuf)
 
@@ -66,10 +66,11 @@ def get_current_price(code):
     """인자로 받은 종목의 현재가, 매수호가, 매도호가를 반환한다."""
     cpStock.SetInputValue(0, code)  # 종목코드에 대한 가격 정보
     cpStock.BlockRequest()
-    item = {}
-    item["cur_price"] = cpStock.GetHeaderValue(11)  # 현재가
-    item["ask"] = cpStock.GetHeaderValue(16)  # 매수호가
-    item["bid"] = cpStock.GetHeaderValue(17)  # 매도호가
+    item = {
+        "cur_price": cpStock.GetHeaderValue(11),
+        "ask": cpStock.GetHeaderValue(16),
+        "bid": cpStock.GetHeaderValue(17),
+    }
     return item["cur_price"], item["ask"], item["bid"]
 
 
@@ -189,7 +190,6 @@ def buy_etf(code):
         if code in bought_list:  # 매수 완료 종목이면 더 이상 안 사도록 함수 종료
             # printlog('code:', code, 'in', bought_list)
             return False
-        time_now = datetime.now()
         current_price, ask_price, bid_price = get_current_price(code)
         target_price = get_target_price(code)  # 매수 목표가
         ma5_price = get_movingaverage(code, 5)  # 5일 이동평균가
@@ -341,7 +341,7 @@ if __name__ == "__main__":
                     get_stock_balance("ALL")
                     time.sleep(5)
             if t_sell < t_now < t_exit:  # PM 03:15 ~ PM 03:20 : 일괄 매도
-                if sell_all() == True:
+                if sell_all():
                     dbgout("`sell_all() returned True -> self-destructed!`")
                     sys.exit(0)
             if t_exit < t_now:  # PM 03:20 ~ :프로그램 종료
