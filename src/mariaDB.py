@@ -1,7 +1,7 @@
 import pymysql
 
 conn = pymysql.connect(
-    host="localhost", user="root", password="mariadb", db="mytrading", port=3308, charset="utf8"
+    host="localhost", user="root", password="mariadb", db="mytrading", port=3306, charset="utf8"
 )
 
 cursor = conn.cursor()

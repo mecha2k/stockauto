@@ -22,7 +22,7 @@ class DB_update:
             user="root",
             password=db_passwd,
             db="mytrading",
-            port=3308,
+            port=3306,
             charset="utf8",
         )
 
@@ -151,13 +151,10 @@ class DB_update:
             )
 
     def update_daily_price(self, pages_to_fetch):
-        print(len(self.codes))
         for idx, code in enumerate(self.codes):
             print(idx, code)
 
         for idx, code in enumerate(self.codes):
-            if idx < 30:
-                continue
             df = self.read_naver_sise(code, self.codes[code], pages_to_fetch)
             if df is None:
                 continue
