@@ -97,6 +97,5 @@ class MarketDB:
 
 if __name__ == "__main__":
     market_db = MarketDB()
-    # data = market_db.getDailyPrice("000020")
-    data = market_db.getDailyPrice("000020", "2010-01-24", "2021-02-23")
+    data = market_db.getDailyPrice("삼성전자", "2010-01-24", "2021-02-28")
     print(data)

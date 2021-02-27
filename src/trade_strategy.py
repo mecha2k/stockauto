@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import marketDB
 
 
-def get_stock_data(stocks, start="2010-01-04", end="2020-01-27"):
+def get_stock_data(stocks_, start="2010-01-04", end="2020-01-27"):
     market = marketDB.MarketDB()
-    dataframe = pd.DataFrame()
-    for stock in stocks:
-        dataframe[stock] = market.getDailyPrice(stock, start, end)["close"]
-    return dataframe
+    dataframe_ = pd.DataFrame()
+    for stock in stocks_:
+        dataframe_[stock] = market.getDailyPrice(stock, start, end)["close"]
+    return dataframe_
 
 
 def eff_frontier(df):
