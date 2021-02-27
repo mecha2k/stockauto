@@ -1,13 +1,18 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
 import pandas as pd
+import os
 
 
 def web_scraping():
     options = webdriver.ChromeOptions()
     options.add_argument("headless")
 
-    driver = webdriver.Chrome(executable_path="/usr/local/bin/chromedriver", options=options)
+    load_dotenv(verbose=True)
+    webdriver_path = os.getenv("WEBDRIVER_PATH")
+    driver = webdriver.Chrome(executable_path=webdriver_path, options=options)
     driver.implicitly_wait(3)
     driver.get(url="https://finance.naver.com/sise/etf.nhn")
 
