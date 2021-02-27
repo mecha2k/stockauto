@@ -7,7 +7,7 @@ def web_scraping():
     options = webdriver.ChromeOptions()
     options.add_argument("headless")
 
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(executable_path="/usr/local/bin/chromedriver", options=options)
     driver.implicitly_wait(3)
     driver.get(url="https://finance.naver.com/sise/etf.nhn")
 

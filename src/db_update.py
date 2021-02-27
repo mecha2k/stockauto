@@ -15,14 +15,16 @@ from dotenv import load_dotenv
 class DB_update:
     def __init__(self):
         load_dotenv(verbose=True)
+        db_name = os.getenv("MARIADB_NAME")
+        db_port = int(os.getenv("MARIADB_PORT"))
         db_passwd = os.getenv("MARIADB_PASSWD")
 
         self.conn = pymysql.connect(
             host="localhost",
             user="root",
             password=db_passwd,
-            db="mytrading",
-            port=3306,
+            db=db_name,
+            port=db_port,
             charset="utf8",
         )
 
