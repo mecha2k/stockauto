@@ -30,15 +30,15 @@ class DB_update:
 
         with self.conn.cursor() as cursor:
             sql = """
-            CREATE TABLE IF NOT EXISTS company_info (
+            CREATE TABLE IF NOT EXISTS company (
                 code VARCHAR(20),
-                company VARCHAR(40),
+                name VARCHAR(40),
                 last_update DATE,
                 PRIMARY KEY (code))
             """
             cursor.execute(sql)
             sql = """
-            CREATE TABLE IF NOT EXISTS daily_price (
+            CREATE TABLE IF NOT EXISTS price (
                 code VARCHAR(20),
                 date DATE,
                 open BIGINT(20),
@@ -57,13 +57,13 @@ class DB_update:
         self.conn.close()
 
     def update_comp_info(self):
-        sql = "SELECT * FROM company_info"
+        sql = "SELECT * FROM company"
         df = pd.read_sql(sql, self.conn)
         for idx in range(len(df)):
-            self.codes[df["code"].values[idx]] = df["company"].values[idx]
+            self.codes[df["code"].values[idx]] = df["name"].values[idx]
 
         with self.conn.cursor() as curs:
-            sql = "SELECT max(last_update) FROM company_info"
+            sql = "SELECT max(last_update) FROM company"
             curs.execute(sql)
             rs = curs.fetchone()
             today = datetime.today().strftime("%Y-%m-%d")
@@ -71,17 +71,17 @@ class DB_update:
                 krx = self.read_krx_code()
                 for idx in range(len(krx)):
                     code = krx.code.values[idx]
-                    company = krx.company.values[idx]
+                    name = krx.name.values[idx]
                     sql = (
-                        f"REPLACE INTO company_info (code, company, last_update) "
-                        f"VALUES ('{code}', '{company}', '{today}')"
+                        f"REPLACE INTO company (code, name, last_update) "
+                        f"VALUES ('{code}', '{name}', '{today}')"
                     )
                     curs.execute(sql)
-                    self.codes[code] = company
+                    self.codes[code] = name
                     tmnow = datetime.now().strftime("%Y-%m-%d %H:%M")
                     print(
-                        f"[{tmnow}] #{idx + 1:04d} REPLACE INTO company_info "
-                        f"VALUES ({code}, {company}, {today})"
+                        f"[{tmnow}] #{idx + 1:04d} REPLACE INTO company "
+                        f"VALUES ({code}, {name}, {today})"
                     )
                 self.conn.commit()
                 print("")
@@ -91,7 +91,7 @@ class DB_update:
         url = "http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13"
         krx = pd.read_html(url, header=0)[0]
         krx = krx[["종목코드", "회사명"]]
-        krx = krx.rename(columns={"종목코드": "code", "회사명": "company"})
+        krx = krx.rename(columns={"종목코드": "code", "회사명": "name"})
         krx["code"] = krx["code"].map("{:06d}".format)
         return krx
 
@@ -142,14 +142,14 @@ class DB_update:
         with self.conn.cursor() as curs:
             for r in df.itertuples():
                 sql = (
-                    f"REPLACE INTO daily_price VALUES ('{code}', "
+                    f"REPLACE INTO price VALUES ('{code}', "
                     f"'{r.date}', {r.open}, {r.high}, {r.low}, {r.close}, {r.diff}, {r.volume})"
                 )
                 curs.execute(sql)
             self.conn.commit()
             cur_time = datetime.now().strftime("%Y-%m-%d" " %H:%M")
             print(
-                f"[{cur_time}] #{num+1:04d} {company} ({code}) : {len(df)} rows > REPLACE INTO daily_price [OK]"
+                f"[{cur_time}] #{num+1:04d} {company} ({code}) : {len(df)} rows > REPLACE INTO price [OK]"
             )
 
     def update_daily_price(self, pages_to_fetch):
@@ -170,7 +170,7 @@ class DB_update:
                 pages_to_fetch = config["pages_to_fetch"]
         except FileNotFoundError:
             with open("config.json", "w") as out_file:
-                pages_to_fetch = 500
+                pages_to_fetch = 1
                 config = {"pages_to_fetch": pages_to_fetch}
                 json.dump(config, out_file)
         self.update_daily_price(pages_to_fetch)
