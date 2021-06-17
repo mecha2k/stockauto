@@ -1,0 +1,33 @@
+SHOW DATABASES;
+
+CREATE SCHEMA `mystock` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+USE mystock;
+
+CREATE TABLE `mystock`.`company` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(20) NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  `updatetime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
+
+DROP TABLE `mystock`.`company`;
+
+CREATE TABLE `mystock`.`price` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(20) NOT NULL,
+  `date` DATE NOT NULL,
+  `open` INT UNSIGNED NULL,
+  `high` INT UNSIGNED NULL,
+  `low` INT UNSIGNED NULL,
+  `close` INT UNSIGNED NULL,
+  `diff` INT NULL,
+  `volume` INT UNSIGNED NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
+
+DESCRIBE company;
+INSERT INTO company(code, name) VALUES ('100300', '삼성전자');
+SELECT * FROM company;
+TRUNCATE TABLE company;
+
