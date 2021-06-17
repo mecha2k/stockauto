@@ -154,9 +154,6 @@ class DB_update:
 
     def update_daily_price(self, pages_to_fetch):
         for idx, code in enumerate(self.codes):
-            print(idx, code)
-
-        for idx, code in enumerate(self.codes):
             df = self.read_naver_sise(code, self.codes[code], pages_to_fetch)
             if df is None:
                 continue
