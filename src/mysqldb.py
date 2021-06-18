@@ -38,32 +38,43 @@ class Database:
             sql = "SELECT max(updatetime) FROM company"
             curs.execute(sql)
             rs = curs.fetchone()
-            today = datetime.today().strftime("%Y-%m-%d")
+            today = datetime.today().strftime("%Y-%m-%d %H:%M")
             if rs[0] is None or rs[0].strftime("%Y-%m-%d") < today:
                 krx = self.read_krx_code()
+                krx = krx.fillna("missing")
                 for idx in range(len(krx)):
                     code = krx.code.values[idx]
                     name = krx.name.values[idx]
                     sql = (
-                        f"REPLACE INTO company (code, name, updatetime) "
-                        f"VALUES ('{code}', '{name}', '{today}')"
+                        f"REPLACE INTO company "
+                        f"(code, name, field, publicdate, homepage) VALUES "
+                        f"('{code}', '{name}', '{krx.field.values[idx]}', '{krx.publicdate.values[idx]}', '{krx.homepage.values[idx]}')"
                     )
                     curs.execute(sql)
                     self.codes[code] = name
-                    tmnow = datetime.now().strftime("%Y-%m-%d %H:%M")
+                    timenow = datetime.now().strftime("%Y-%m-%d %H:%M")
                     print(
-                        f"[{tmnow}] #{idx + 1:04d} REPLACE INTO company "
-                        f"VALUES ({code}, {name}, {today})"
+                        f"[{timenow}] #{idx + 1:04d} REPLACE INTO company "
+                        f"VALUES ({code}, {name}, {krx.products.values[idx]}, {krx.homepage.values[idx]}, {today})"
                     )
                 self.conn.commit()
-                print("")
 
     @staticmethod
     def read_krx_code():
         url = "http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13"
         krx = pd.read_html(url, header=0)[0]
-        krx = krx[["종목코드", "회사명"]]
-        krx = krx.rename(columns={"종목코드": "code", "회사명": "name"})
+        krx = krx.rename(
+            columns={
+                "종목코드": "code",
+                "회사명": "name",
+                "업종": "field",
+                "주요제품": "products",
+                "상장일": "publicdate",
+                "대표자명": "representative",
+                "홈페이지": "homepage",
+                "지역": "region",
+            }
+        )
         krx["code"] = krx["code"].map("{:06d}".format)
         return krx
 
@@ -114,20 +125,17 @@ class Database:
         with self.conn.cursor() as curs:
             for r in df.itertuples():
                 sql = (
-                    f"REPLACE INTO price VALUES ('{code}', "
-                    f"'{r.date}', {r.open}, {r.high}, {r.low}, {r.close}, {r.diff}, {r.volume})"
+                    f"REPLACE INTO price (code, date, open, high, low, close, diff, volume) VALUES "
+                    f"('{code}', '{r.date}', {r.open}, {r.high}, {r.low}, {r.close}, {r.diff}, {r.volume})"
                 )
                 curs.execute(sql)
             self.conn.commit()
-            cur_time = datetime.now().strftime("%Y-%m-%d" " %H:%M")
+            timenow = datetime.now().strftime("%Y-%m-%d %H:%M")
             print(
-                f"[{cur_time}] #{num+1:04d} {company} ({code}) : {len(df)} rows > REPLACE INTO price [OK]"
+                f"[{timenow}] #{num+1:04d} {company} ({code}) : {len(df)} rows > REPLACE INTO price [OK]"
             )
 
     def update_daily_price(self, pages_to_fetch):
-        for idx, code in enumerate(self.codes):
-            print(idx, code)
-
         for idx, code in enumerate(self.codes):
             df = self.read_naver_sise(code, self.codes[code], pages_to_fetch)
             if df is None:
@@ -164,7 +172,7 @@ class Database:
 
 if __name__ == "__main__":
     mysqldb = Database()
-    mysqldb.update_comp_info()
+    mysqldb.execute_daily()
 
-    # mysqldb.execute_daily()
+    # mysqldb.update_comp_info()
     # print(mysqldb.read_krx_code())
