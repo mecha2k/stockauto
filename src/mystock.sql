@@ -12,58 +12,33 @@ CREATE TABLE `mystock`.`company` (
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
 
 DROP TABLE `mystock`.`company`;
-TRUNCATE TABLE `mystock`.`company`;
-
-ALTER TABLE `mystock`.`company` 
-ADD COLUMN `products` VARCHAR(45) NULL AFTER `field`,
-ADD COLUMN `publicdate` DATE NULL AFTER `products`,
-ADD COLUMN `representative` VARCHAR(20) NULL AFTER `publicdate`,
-ADD COLUMN `homepage` VARCHAR(45) NULL AFTER `representative`,
-ADD COLUMN `region` VARCHAR(45) NULL AFTER `homepage`,
-CHANGE COLUMN `field` `field` VARCHAR(20) NULL DEFAULT NULL AFTER `name`;
-
-CREATE TABLE `mystock`.`price` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `code` VARCHAR(20) NOT NULL,
-  `date` DATE NOT NULL,
-  `open` INT UNSIGNED NULL,
-  `high` INT UNSIGNED NULL,
-  `low` INT UNSIGNED NULL,
-  `close` INT UNSIGNED NULL,
-  `diff` INT NULL,
-  `volume` INT UNSIGNED NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);
+DROP TABLE `mystock`.`price`;
 
 DESCRIBE company;
 INSERT INTO company(code, name) VALUES ('100300', '삼성전자');
 SELECT * FROM company;
 TRUNCATE TABLE company;
-
-DESCRIBE price;
-SELECT * FROM price;
-SELECT * FROM price WHERE code = 004840;
-SELECT min(date) FROM price;
-SELECT max(date) FROM price;
 TRUNCATE TABLE price;
 
-SHOW CREATE TABLE company;
+SELECT now();
+SHOW VARIABLES LIKE '%time_zone%';
+SELECT @@time_zone;
+
+DROP TABLE `mystock`.`company`;
+TRUNCATE TABLE `mystock`.`company`;
+TRUNCATE TABLE `mystock`.`price`;
+
+USE mystock;
+SELECT * FROM company LIMIT 100;
+SELECT count(*) FROM company;
+SELECT * FROM price WHERE code ='000020' ORDER BY date DESC LIMIT 100;
+
 SHOW CREATE TABLE price;
 
-CREATE TABLE `company` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `code` varchar(20) COLLATE utf8mb4_bin NOT NULL,
-  `name` varchar(45) COLLATE utf8mb4_bin NOT NULL,
-  `field` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
-  `publicdate` date DEFAULT NULL,
-  `homepage` varchar(200) COLLATE utf8mb4_bin DEFAULT NULL,
-  `updatetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=29389 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE TABLE `price` (
-  `code` varchar(20) COLLATE utf8mb4_bin NOT NULL,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `code` int unsigned NOT NULL,
   `date` date NOT NULL,
   `open` int unsigned DEFAULT NULL,
   `high` int unsigned DEFAULT NULL,
@@ -71,7 +46,20 @@ CREATE TABLE `price` (
   `close` int unsigned DEFAULT NULL,
   `diff` int DEFAULT NULL,
   `volume` int unsigned DEFAULT NULL,
-  PRIMARY KEY (`code`,`date`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
+ALTER TABLE `mystock`.`price` ADD CONSTRAINT FOREIGN KEY (`code`) REFERENCES `mystock`.`company` (`id`) 
+ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+SELECT count(*) FROM company;
+SELECT * FROM company ORDER BY code ASC;
+SELECT * FROM price LIMIT 1000;
+SELECT count(*) FROM price;
+
+SELECT company.code, company.name, price.* FROM price INNER JOIN company on price.code = company.id LIMIT 100;
+SELECT id FROM company WHERE code = '001250';
+INSERT IGNORE INTO price(code, date, open, high, low, close, diff, volume) 
+VALUES ('30316', '2015-12-01', 500, 600, 350, 480, 120, 100200);
 

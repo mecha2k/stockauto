@@ -37,24 +37,25 @@ class Database:
         with self.conn.cursor() as curs:
             sql = "SELECT max(updatetime) FROM company"
             curs.execute(sql)
-            rs = curs.fetchone()
+            rows = curs.fetchone()
             today = datetime.today().strftime("%Y-%m-%d %H:%M")
-            if rs[0] is None or rs[0].strftime("%Y-%m-%d") < today:
+            if rows[0] is None or rows[0].strftime("%Y-%m-%d") < today:
                 krx = self.read_krx_code()
                 krx = krx.fillna("missing")
                 for idx in range(len(krx)):
                     code = krx.code.values[idx]
                     name = krx.name.values[idx]
                     sql = (
-                        f"REPLACE INTO company "
+                        f"INSERT IGNORE INTO company "
                         f"(code, name, field, publicdate, homepage) VALUES "
-                        f"('{code}', '{name}', '{krx.field.values[idx]}', '{krx.publicdate.values[idx]}', '{krx.homepage.values[idx]}')"
+                        f"('{code}', '{name}', '{krx.field.values[idx]}', '{krx.publicdate.values[idx]}', "
+                        f"'{krx.homepage.values[idx]}')"
                     )
                     curs.execute(sql)
                     self.codes[code] = name
                     timenow = datetime.now().strftime("%Y-%m-%d %H:%M")
                     print(
-                        f"[{timenow}] #{idx + 1:04d} REPLACE INTO company "
+                        f"[{timenow}] #{idx + 1:04d} INSERT IGNORE INTO company "
                         f"VALUES ({code}, {name}, {krx.products.values[idx]}, {krx.homepage.values[idx]}, {today})"
                     )
                 self.conn.commit()
@@ -124,15 +125,18 @@ class Database:
     def replace_into_db(self, df, num, code, company):
         with self.conn.cursor() as curs:
             for r in df.itertuples():
+                sql = f"SELECT id FROM company WHERE code = '{code}'"
+                curs.execute(sql)
+                codeid = curs.fetchone()[0]
                 sql = (
-                    f"REPLACE INTO price (code, date, open, high, low, close, diff, volume) VALUES "
-                    f"('{code}', '{r.date}', {r.open}, {r.high}, {r.low}, {r.close}, {r.diff}, {r.volume})"
+                    f"INSERT IGNORE INTO price (code, date, open, high, low, close, diff, volume) VALUES "
+                    f"('{codeid}', '{r.date}', {r.open}, {r.high}, {r.low}, {r.close}, {r.diff}, {r.volume})"
                 )
                 curs.execute(sql)
             self.conn.commit()
             timenow = datetime.now().strftime("%Y-%m-%d %H:%M")
             print(
-                f"[{timenow}] #{num+1:04d} {company} ({code}) : {len(df)} rows > REPLACE INTO price [OK]"
+                f"[{timenow}] #{num+1:04d} {company} ({code}) : {len(df)} rows > INSERT IGNORE INTO price [OK]"
             )
 
     def update_daily_price(self, pages_to_fetch):
@@ -155,19 +159,19 @@ class Database:
                 json.dump(config, out_file)
         self.update_daily_price(pages_to_fetch)
 
-        tmnow = datetime.now()
-        lastday = calendar.monthrange(tmnow.year, tmnow.month)[1]
-        if tmnow.month == 12 and tmnow.day == lastday:
-            tmnext = tmnow.replace(year=tmnow.year + 1, month=1, day=1, hour=17, minute=0, second=0)
-        elif tmnow.day == lastday:
-            tmnext = tmnow.replace(month=tmnow.month + 1, day=1, hour=17, minute=0, second=0)
-        else:
-            tmnext = tmnow.replace(day=tmnow.day + 1, hour=17, minute=0, second=0)
-        tmdiff = tmnext - tmnow
-        secs = tmdiff.seconds
-        thread = Timer(secs, self.execute_daily)
-        print("Waiting for next update ({}) ... ".format(tmnext.strftime("%Y-%m-%d %H:%M")))
-        thread.start()
+        # tmnow = datetime.now()
+        # lastday = calendar.monthrange(tmnow.year, tmnow.month)[1]
+        # if tmnow.month == 12 and tmnow.day == lastday:
+        #     tmnext = tmnow.replace(year=tmnow.year + 1, month=1, day=1, hour=17, minute=0, second=0)
+        # elif tmnow.day == lastday:
+        #     tmnext = tmnow.replace(month=tmnow.month + 1, day=1, hour=17, minute=0, second=0)
+        # else:
+        #     tmnext = tmnow.replace(day=tmnow.day + 1, hour=17, minute=0, second=0)
+        # tmdiff = tmnext - tmnow
+        # secs = tmdiff.seconds
+        # thread = Timer(secs, self.execute_daily)
+        # print("Waiting for next update ({}) ... ".format(tmnext.strftime("%Y-%m-%d %H:%M")))
+        # thread.start()
 
 
 if __name__ == "__main__":
