@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 class Database:
     def __init__(self):
         load_dotenv(verbose=True)
+        print(os.getenv("DB_NAME"), os.getenv("DB_HOST"))
+
         self.conn = pymysql.connect(
             host=os.getenv("DB_HOST"),
             user=os.getenv("DB_USER"),
@@ -23,7 +25,6 @@ class Database:
             charset="utf8",
         )
         self.codes = dict()
-        print(os.getenv("DB_NAME"), os.getenv("DB_HOST"))
 
     def __del__(self):
         self.conn.close()
@@ -117,6 +118,7 @@ class Database:
                 ["close", "diff", "open", "high", "low", "volume"]
             ].astype(int)
             df = df[["date", "open", "high", "low", "close", "diff", "volume"]]
+            print(df.loc[:5, "date"])
         except Exception as e:
             print("Exception occured :", str(e))
             return None
@@ -176,7 +178,15 @@ class Database:
 
 if __name__ == "__main__":
     mysqldb = Database()
-    mysqldb.execute_daily()
+    # mysqldb.execute_daily()
 
     # mysqldb.update_comp_info()
     # print(mysqldb.read_krx_code())
+
+    code = "005930"
+    pages_to_fetch = 2
+    mysqldb.update_comp_info()
+    print(mysqldb.codes[code])
+
+    df = mysqldb.read_naver_sise(code, mysqldb.codes[code], pages_to_fetch)
+    mysqldb.replace_into_db(df, 100, code, mysqldb.codes[code])
