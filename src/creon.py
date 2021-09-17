@@ -1,5 +1,9 @@
 import pandas as pd
 import win32com.client
+import matplotlib.pyplot as plt
+
+from datetime import datetime
+from icecream import ic
 
 
 def get_stock_lists():
@@ -8,19 +12,27 @@ def get_stock_lists():
     codeList = objCpCodeMgr.GetStockListByMarket(1)  # 거래소
     codeList2 = objCpCodeMgr.GetStockListByMarket(2)  # 코스닥
 
+    data = []
     print("거래소 종목코드", len(codeList))
     for i, code in enumerate(codeList):
         secondCode = objCpCodeMgr.GetStockSectionKind(code)
         name = objCpCodeMgr.CodeToName(code)
         stdPrice = objCpCodeMgr.GetStockStdPrice(code)
+        data.append([code, secondCode, stdPrice, name])
         print(i, code, secondCode, stdPrice, name)
+    df = pd.DataFrame(data, columns=["code", "2nd_code", "std_price", "name"])
+    df.to_csv("data/kospi.csv")
 
+    data = []
     print("코스닥 종목코드", len(codeList2))
     for i, code in enumerate(codeList2):
         secondCode = objCpCodeMgr.GetStockSectionKind(code)
         name = objCpCodeMgr.CodeToName(code)
         stdPrice = objCpCodeMgr.GetStockStdPrice(code)
+        data.append([code, secondCode, stdPrice, name])
         print(i, code, secondCode, stdPrice, name)
+    df = pd.DataFrame(data, columns=["code", "2nd_code", "std_price", "name"])
+    df.to_csv("data/kosdaq.csv")
 
     print("거래소 + 코스닥 종목코드 ", len(codeList) + len(codeList2))
 
@@ -111,7 +123,7 @@ def get_stock_chart_num(code, num=10):
     return data
 
 
-def get_stock_chart_period(code, num=1000000):
+def get_stock_chart(code, num=1000000):
     # 차트 객체 구하기
     objStockChart = win32com.client.Dispatch("CpSysDib.StockChart")
     objStockChart.SetInputValue(0, code)  # 종목 코드 - 삼성전자
@@ -144,24 +156,6 @@ def get_stock_chart_period(code, num=1000000):
 
     return df
 
-    # # 딕셔너리를 만들어 데이터 프레임으로 변환
-    # dict1 = {
-    #     "day": day_list,
-    #     "open": open_list,
-    #     "high": high_list,
-    #     "low": low_list,
-    #     "close": close_list,
-    #     "vol": vol_list,
-    #     "amount": amount_list,
-    # }
-
-    # df = pd.DataFrame(
-    #     dict1, columns=["day", "open", "high", "low", "close", "vol", "amount"]
-    # )  # 2. 데이터프레임으로 만들기
-    # df = df.sort_index(ascending=False)  # 내림차순 정렬
-
-    # df.to_csv("{}.csv".format(stockcode), index=False)  # csv로 삼성전자 전구간 일봉을 저장
-
 
 if __name__ == "__main__":
     # 연결 여부 체크
@@ -180,7 +174,26 @@ if __name__ == "__main__":
     #     stock = data[i]
     #     print(stock[0], stock[1], stock[2], stock[3], stock[4], stock[5])
 
-    df = get_stock_chart_period(code="A005930")
-    df.info()
-    print(df.head())
-    print(df.describe())
+    # df = get_stock_chart(code="A005930", num=10)
+    # df.info()
+    # print(df.head())
+    # print(df.describe())
+
+    src_data = "data/stock1.pkl"
+    tickers = {"현대차": "A005380", "삼성전자": "A005930", "네이버": "A035420", "카카오": "A035720"}
+    # get_data = lambda ticker: get_stock_chart(code=ticker)
+    # data = map(get_data, tickers.values())
+    # data = pd.concat(data, keys=tickers.keys(), names=["ticker"])
+    # data.to_pickle(src_data)
+
+    data = pd.read_pickle(src_data)
+    data = data.loc[:, ["date", "close"]].reset_index()
+    prices = data.pivot(index="date", columns="ticker", values="close")
+    prices = prices["2020":"2021"]
+    prices.to_csv("data/hmc_sec.csv")
+    print(prices.head(10))
+
+    plt.rc("font", family="Malgun Gothic")
+    prices["카카오"].plot(figsize=(12, 8))
+    plt.grid(True)
+    plt.show()
