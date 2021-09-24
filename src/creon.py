@@ -165,35 +165,35 @@ if __name__ == "__main__":
         print("PLUS가 정상적으로 연결되지 않음. ")
         exit()
 
-    # get_stock_lists()
-    # get_stock_price(code="A005930")
-    # data = get_stock_chart_num(code="A005930", num=10)
-    # print("date", "open", "high", "low", "close", "volume")
-    # print("===============================================")
-    # for i in range(len(data)):
-    #     stock = data[i]
-    #     print(stock[0], stock[1], stock[2], stock[3], stock[4], stock[5])
+    get_stock_lists()
+    get_stock_price(code="A005930")
+    data = get_stock_chart_num(code="A005930", num=10)
+    print("date", "open", "high", "low", "close", "volume")
+    print("===============================================")
+    for i in range(len(data)):
+        stock = data[i]
+        print(stock[0], stock[1], stock[2], stock[3], stock[4], stock[5])
 
-    # df = get_stock_chart(code="A005930", num=10)
-    # df.info()
-    # print(df.head())
-    # print(df.describe())
+    df = get_stock_chart(code="A005930", num=10)
+    df.info()
+    print(df.head())
+    print(df.describe())
 
     src_data = "data/stock1.pkl"
     tickers = {"현대차": "A005380", "삼성전자": "A005930", "네이버": "A035420", "카카오": "A035720"}
-    # get_data = lambda ticker: get_stock_chart(code=ticker)
-    # data = map(get_data, tickers.values())
-    # data = pd.concat(data, keys=tickers.keys(), names=["ticker"])
-    # data.to_pickle(src_data)
+    get_data = lambda ticker: get_stock_chart(code=ticker)
+    data = map(get_data, tickers.values())
+    data = pd.concat(data, keys=tickers.keys(), names=["ticker"])
+    data.to_pickle(src_data)
 
-    data = pd.read_pickle(src_data)
-    data = data.loc[:, ["date", "close"]].reset_index()
-    prices = data.pivot(index="date", columns="ticker", values="close")
-    prices = prices["2020":"2021"]
-    prices.to_csv("data/hmc_sec.csv")
-    print(prices.head(10))
+    # data = pd.read_pickle(src_data)
+    # data = data.loc[:, ["date", "close"]].reset_index()
+    # prices = data.pivot(index="date", columns="ticker", values="close")
+    # prices = prices["2020":"2021"]
+    # prices.to_csv("data/hmc_sec.csv")
+    # print(prices.head(10))
 
-    plt.rc("font", family="Malgun Gothic")
-    prices["카카오"].plot(figsize=(12, 8))
-    plt.grid(True)
-    plt.show()
+    # plt.rc("font", family="Malgun Gothic")
+    # prices["카카오"].plot(figsize=(12, 8))
+    # plt.grid(True)
+    # plt.show()
